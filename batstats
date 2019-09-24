@@ -1,0 +1,25 @@
+#!/bin/bash
+data_path="/sys/class/power_supply/battery/"
+status=`cat ${data_path}status`
+capacity=`cat ${data_path}capacity`
+voltage_raw=`cat ${data_path}voltage_now`
+voltage_cmd="scale=3; ${voltage_raw} / 1000000"
+voltage=`bc <<< ${voltage_cmd}`
+max_voltage_raw=`cat ${data_path}voltage_max_design`
+max_voltage_cmd="scale=3; ${max_voltage_raw} / 1000000"
+max_voltage=`bc <<< ${max_voltage_cmd}`
+amperage_raw=`cat ${data_path}current_now`
+amperage_cmd="scale=0; ${amperage_raw} / 1000"
+amperage=`bc <<< ${amperage_cmd}`
+if [ "$status" == "Charging" ]; then
+        amperage_sign="+"
+else
+        amperage_sign="-"
+fi
+echo "Current battery information"
+echo "---------------------------"
+echo "Status: ${status}"
+echo "Capacity: ${capacity}%"
+echo "Voltage: ${voltage}V / ${max_voltage}V"
+echo "Amperage: ${amperage_sign}${amperage}mAh"
+
