@@ -1,18 +1,28 @@
 #!/bin/bash
-source "/sys/class/power_supply/battery/uevent"
+data_path="/sys/class/power_supply/battery/"
+status=$(cat ${data_path}status)
+source "${data_path}uevent"
 function get () {
         cmd="scale=$2; $1 / $3"
         data=$(bc <<< $cmd)
         echo "$data"
 }
-if [ "$POWER_SUPPLY_STATUS" == "Charging" ]; then
+if [ "$status" == "Charging" ]; then
         amp_sign="+"
 else
         amp_sign="-"
 fi
 echo "Current battery information"
 echo "---------------------------"
-echo "Status: $POWER_SUPPLY_STATUS"
-echo "Capacity: $POWER_SUPPLY_CAPACITY%"
-echo "Voltage: $(get "$POWER_SUPPLY_VOLTAGE_NOW" "3" "1000000")V / $(get "$POWER_SUPPLY_VOLTAGE_MAX_DESIGN" "3" "1000000")V"
-echo "Amperage: $amp_sign$(get "$POWER_SUPPLY_CURRENT_NOW" "0" "1000")mAh"
+if [ "$status" != "" ]; then
+        echo "Status: $status"
+fi
+if [ "$POWER_SUPPLY_CAPACITY" != "" ]; then
+        echo "Capacity: $POWER_SUPPLY_CAPACITY%"
+fi
+if [ "$POWER_SUPPLY_VOLTAGE_NOW" != "" ] && [ "$POWER_SUPPLY_VOLTAGE_MAX_DESIGN" != "" ]; then
+        echo "Voltage: $(get "$POWER_SUPPLY_VOLTAGE_NOW" "3" "1000000")V / $(get "$POWER_SUPPLY_VOLTAGE_MAX_DESIGN" "3" "1000000")V"
+fi
+if [ "$POWER_SUPPLY_CURRENT_NOW" != "" ]; then
+        echo "Amperage: $amp_sign$(get "$POWER_SUPPLY_CURRENT_NOW" "0" "1000")mAh"
+fi
